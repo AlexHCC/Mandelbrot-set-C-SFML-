@@ -1,5 +1,5 @@
-#include <cstdlib>
 #include <iostream>
+#include <cmath>
 #include <SFML/Graphics.hpp>
 
 using namespace std;
@@ -9,8 +9,9 @@ const int WIDTH =  800, HEIGHT = 800;
 sf::Image fractal;
 sf::Texture draw;
 sf::Sprite print;
+int numOfIterations = 50;
 
-void mapValues(float posX, float posY, int &linkX, int &linkY, float canvasSize);
+void mapValues(int posX, int posY, float &linkX, float &linkY, float canvasSize);
 
 int main(int argc, char** argv) {
     
@@ -29,14 +30,25 @@ int main(int argc, char** argv) {
                 window.close();
         }
         
+        for (int x = 0; x < WIDTH; x++) { for (int y = 0; y < HEIGHT; y++) {
+            float a, b;
+            mapValues(x, y, a, b, 2.0f);
+            float tx = 0.0f;
+            float ty = 0.0f;
+            
+            for (int i = 0; i < numOfIterations; i++) {
+                float xtemp =  tx*tx - ty*ty + a;
+                ty = 2*tx*ty + b;
+                tx = xtemp;
+                if (tx > 20) {i = numOfIterations;  fractal.setPixel(x, y, sf::Color(255, 255, 255));}
+            }
+           
+        }}
         
-        
+        //int x, y = 0;
+        //mapValues(0.5555f, 1.99999f, x, y, 2.0f);
+        //fractal.setPixel(x, y, sf::Color(255, 255, 0));
         //for(int i = 0; i < 800; i++) {fractal.setPixel(i, i, sf::Color(255, 255, 0));}
-        
-        int x, y = 0;
-        
-        mapValues(0.5555555f, 1.99999999999f, x, y, 2.0f);
-        fractal.setPixel(x, y, sf::Color(255, 255, 0));
         
         draw.update(fractal);     
         window.clear();
@@ -48,11 +60,15 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void mapValues(float posX, float posY, int &linkX, int &linkY, float canvasSize) {
-    if (posX > canvasSize || posX < -canvasSize || posY > canvasSize || posY < -canvasSize) {
+void mapValues(int posX, int posY, float &linkX, float &linkY, float canvasSize) {
+    if (posX > WIDTH || posX < -WIDTH || posY > HEIGHT || posY < -HEIGHT) {
         cout << "Out of bounds map values" << endl;
         return;
     }
-    linkX = ((int)(WIDTH / 2 + (posX * WIDTH / 2) / canvasSize));
-    linkY = ((int)(HEIGHT / 2 - (posY * HEIGHT / 2) / canvasSize));
+    //posX = WIDTH / 2 + (linkX * WIDTH / 2) / canvasSize;
+    //posY = HEIGHT / 2 - (linkY * HEIGHT / 2) / canvasSize;
+    
+    linkX = (posX - WIDTH / 2) * canvasSize / WIDTH * 2;
+    linkY = (posY - HEIGHT / 2) * canvasSize / HEIGHT * 2;
+    
 }
