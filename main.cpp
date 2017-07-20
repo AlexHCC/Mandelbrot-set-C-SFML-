@@ -9,7 +9,7 @@ const int WIDTH =  800, HEIGHT = 800;
 sf::Image fractal;
 sf::Texture draw;
 sf::Sprite print;
-int numOfIterations = 50;
+int numOfIterations = 500;
 
 void mapValues(int posX, int posY, float &linkX, float &linkY, float canvasSize);
 
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
         
         for (int x = 0; x < WIDTH; x++) { for (int y = 0; y < HEIGHT; y++) {
             float a, b;
-            mapValues(x, y, a, b, 2.0f);
+            mapValues(x, y, a, b, 1.70f);
             float tx = 0.0f;
             float ty = 0.0f;
             
@@ -40,7 +40,8 @@ int main(int argc, char** argv) {
                 float xtemp =  tx*tx - ty*ty + a;
                 ty = 2*tx*ty + b;
                 tx = xtemp;
-                if (tx*tx + ty*ty >= 2*2 || tx > 20) {i = numOfIterations;  fractal.setPixel(x, y, sf::Color(255, 255, 255));}
+                if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, sf::Color(i, i, i)); i = numOfIterations;}
+                else {fractal.setPixel(x, y, sf::Color(255, 255, 255));}
             }
            
         }}
@@ -70,5 +71,7 @@ void mapValues(int posX, int posY, float &linkX, float &linkY, float canvasSize)
     
     linkX = (posX - WIDTH / 2) * canvasSize / WIDTH * 2;
     linkY = (posY - HEIGHT / 2) * canvasSize / HEIGHT * 2;
+    linkX = linkX - 0.5f;
+    //linkY = linkY - 0.5f;
     
 }
