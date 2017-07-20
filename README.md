@@ -15,7 +15,7 @@ Simple program made in c++ and SFML that simulates the "Mandelbrot set", witch i
 
 ## TODO:
 
-- Optimise (A lot!)
+- Optimize (A lot!)
 - Smooth colors (Linear interpolation)
 - Add Julia set rendering
 
