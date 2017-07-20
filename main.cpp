@@ -6,25 +6,26 @@
 using namespace std;
 
 //Variables
-const int WIDTH =  400, HEIGHT = 400;
+const int WIDTH = 500, HEIGHT = 500;
 sf::Image fractal;
 sf::Texture draw;
 sf::Sprite print;
-int numOfIterations = 100;
-float scale = 2.0f;
-float translation = 0.1f;
-float xOffset = 0.0f;
-float yOffset = 0.0f;
+int numOfIterations = 200;
+long double scale = 2.0f;
+long double translation = 0.1f;
+long double xOffset = -0.5f;
+long double yOffset = 0.0f;
 
-void mapValues(int posX, int posY, float &linkX, float &linkY, float canvasSize);
+void mapValues(int posX, int posY, long double &linkX, long double &linkY, long double canvasSize);
 void moveCanvas();
-sf::Color hsv(int hue, float sat, float val);
+sf::Color hsv(int hue, long double sat, long double val);
 
 int main(int argc, char** argv) {
     
     //Initialization
     if (!draw.create(WIDTH, HEIGHT)) {return -1;}
     fractal.create(WIDTH, HEIGHT, sf::Color(30, 30, 30));
+    
     
     cout << "Mandelbrot set" << endl;
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Mandelbrot set", sf::Style::Titlebar | sf::Style::Close);
@@ -40,28 +41,32 @@ int main(int argc, char** argv) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {yOffset = yOffset - translation*scale;}
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {yOffset = yOffset + translation*scale;}
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {scale = scale * 0.9;}
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {scale = scale / 0.9;}
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {scale = scale / 0.9;}
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {window.close();}
         }
         
         for (int x = 0; x < WIDTH; x++) { for (int y = 0; y < HEIGHT; y++) {
-            float a, b;
+            long double a, b;
             mapValues(x, y, a, b, scale);
-            float tx = 0.0f;
-            float ty = 0.0f;
+            long double tx = 0.0f;
+            long double ty = 0.0f;
             a = a + xOffset;
             b = b + yOffset;
             
             for (int i = 0; i < numOfIterations; i++) {
-                float xtemp =  tx*tx - ty*ty + a;
+                long double xtemp =  tx*tx - ty*ty + a;
                 ty = 2*tx*ty + b;
                 tx = xtemp;
-                if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv(i, 255, 255)); i = numOfIterations;}
-                else {fractal.setPixel(x, y, sf::Color(255, 255, 255));}
+                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations - i*5, 255, 255)); i = numOfIterations;}
+                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations + i*5, 255, 255)); i = numOfIterations;}
+                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) / numOfIterations - i*5, 255, 255)); i = numOfIterations;}
+                if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * i + i*5, 255, 255)); i = numOfIterations;}
+                else {fractal.setPixel(x, y, sf::Color(0, 0, 0));}
             }
            
         }}
         
-        draw.update(fractal);     
+        draw.update(fractal);
         window.clear();
         print.setTexture(draw, false);
         window.draw(print);
@@ -71,7 +76,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void mapValues(int posX, int posY, float &linkX, float &linkY, float canvasSize) {
+void mapValues(int posX, int posY, long double &linkX, long double &linkY, long double canvasSize) {
     if (posX > WIDTH || posX < -WIDTH || posY > HEIGHT || posY < -HEIGHT) {
         cout << "Out of bounds map values" << endl;
         return;
@@ -90,21 +95,21 @@ void moveCanvas() {
     
 }
 
-sf::Color hsv(int hue, float sat, float val) {
+sf::Color hsv(int hue, long double sat, long double val) {
     hue %= 360;
-    while(hue<0) hue += 360;
+    while(hue<0) {hue += 360;}
 
-    if(sat<0.f) sat = 0.f;
-    if(sat>1.f) sat = 1.f;
+    if(sat<0.f) {sat = 0.0f;}
+    if(sat>1.f) {sat = 1.0f;}
 
-    if(val<0.f) val = 0.f;
-    if(val>1.f) val = 1.f;
+    if(val<0.f) {val = 0.f;}
+    if(val>1.f) {val = 1.f;}
 
     int h = hue/60;
-    float f = float(hue)/60-h;
-    float p = val*(1.f-sat);
-    float q = val*(1.f-sat*f);
-    float t = val*(1.f-sat*(1-f));
+    long double f = double(hue) / 60-h;
+    long double p = val*(1.0f - sat);
+    long double q = val*(1.0f - sat*f);
+    long double t = val*(1.0f - sat*(1-f));
 
     switch(h) {
     default:
