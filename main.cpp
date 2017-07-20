@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
                 float xtemp =  tx*tx - ty*ty + a;
                 ty = 2*tx*ty + b;
                 tx = xtemp;
-                if (tx > 20) {i = numOfIterations;  fractal.setPixel(x, y, sf::Color(255, 255, 255));}
+                if (tx*tx + ty*ty >= 2*2 || tx > 20) {i = numOfIterations;  fractal.setPixel(x, y, sf::Color(255, 255, 255));}
             }
            
         }}
