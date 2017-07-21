@@ -12,7 +12,9 @@ sf::Image fractal;
 sf::Texture draw;
 sf::Sprite print;
 sf::RenderWindow window;
-int numOfIterations = 200;
+int numOfIterations = 30;
+long double lod = 1.0f;
+long double holder = 1.0f;
 long double scale = 2.0f;
 long double translation = 0.1f;
 long double xOffset = -0.5f;
@@ -44,11 +46,13 @@ int main(int argc, char** argv) {
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {xOffset = xOffset + translation*scale;}
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {yOffset = yOffset - translation*scale;}
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {yOffset = yOffset + translation*scale;}
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {scale = scale * 0.9;}
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {scale = scale / 0.9;}
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {scale = scale * 0.9; lod = lod * 1.09;}
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {scale = scale / 0.9; lod = lod / 1.09;}
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {window.close();}
         }
         
+        if (lod > holder + 1.0f) {numOfIterations = numOfIterations + 1; holder = holder + 1.0f;}
+        else if (lod < holder - 1.0f) {numOfIterations = numOfIterations - 1; holder = holder - 1.0f;}
         thread tf(moveCanvas, 0, 0, WIDTH/2, HEIGHT/2);
         tf.join();
         thread ts(moveCanvas, WIDTH/2, 0, WIDTH, HEIGHT/2);
