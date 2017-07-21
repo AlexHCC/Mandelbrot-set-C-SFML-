@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <thread>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
@@ -10,6 +11,7 @@ const int WIDTH = 500, HEIGHT = 500;
 sf::Image fractal;
 sf::Texture draw;
 sf::Sprite print;
+sf::RenderWindow window;
 int numOfIterations = 200;
 long double scale = 2.0f;
 long double translation = 0.1f;
@@ -17,8 +19,10 @@ long double xOffset = -0.5f;
 long double yOffset = 0.0f;
 
 void mapValues(int posX, int posY, long double &linkX, long double &linkY, long double canvasSize);
-void moveCanvas();
+void moveCanvas(int pointx, int pointy, int widthx, int widthy);
 sf::Color hsv(int hue, long double sat, long double val);
+
+void prints() {cout << "Hi there!" << endl;}
 
 int main(int argc, char** argv) {
     
@@ -28,7 +32,7 @@ int main(int argc, char** argv) {
     
     
     cout << "Mandelbrot set" << endl;
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Mandelbrot set", sf::Style::Titlebar | sf::Style::Close);
+    window.create(sf::VideoMode(WIDTH, HEIGHT), "Mandelbrot set", sf::Style::Titlebar | sf::Style::Close);
 
     while (window.isOpen()) {
         
@@ -45,31 +49,14 @@ int main(int argc, char** argv) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {window.close();}
         }
         
-        for (int x = 0; x < WIDTH; x++) { for (int y = 0; y < HEIGHT; y++) {
-            long double a, b;
-            mapValues(x, y, a, b, scale);
-            long double tx = 0.0f;
-            long double ty = 0.0f;
-            a = a + xOffset;
-            b = b + yOffset;
-            
-            for (int i = 0; i < numOfIterations; i++) {
-                long double xtemp =  tx*tx - ty*ty + a;
-                ty = 2*tx*ty + b;
-                tx = xtemp;
-                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations - i*5, 255, 255)); i = numOfIterations;}
-                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations + i*5, 255, 255)); i = numOfIterations;}
-                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) / numOfIterations - i*5, 255, 255)); i = numOfIterations;}
-                if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * i + i*5, 255, 255)); i = numOfIterations;}
-                else {fractal.setPixel(x, y, sf::Color(0, 0, 0));}
-            }
-           
-        }}
-        
-        draw.update(fractal);
-        window.clear();
-        print.setTexture(draw, false);
-        window.draw(print);
+        thread tf(moveCanvas, 0, 0, WIDTH/2, HEIGHT/2);
+        tf.join();
+        thread ts(moveCanvas, WIDTH/2, 0, WIDTH, HEIGHT/2);
+        ts.join();
+        thread tt(moveCanvas, 0, HEIGHT/2, WIDTH, HEIGHT);
+        tt.join();
+        thread tq(moveCanvas, WIDTH/2, HEIGHT/2, WIDTH, HEIGHT);
+        tq.join();
         window.display();
     }
 
@@ -85,14 +72,36 @@ void mapValues(int posX, int posY, long double &linkX, long double &linkY, long 
     //posY = HEIGHT / 2 - (linkY * HEIGHT / 2) / canvasSize;
     
     linkX = (posX - WIDTH / 2) * canvasSize / WIDTH * 2;
-    linkY = (posY - HEIGHT / 2) * canvasSize / HEIGHT * 2;
-    //linkX = linkX - 0.5;
-    //linkY = linkY - 0.5f;
-    
+    linkY = (posY - HEIGHT / 2) * canvasSize / HEIGHT * 2;  
 }
 
-void moveCanvas() {
-    
+void moveCanvas(int pointx, int pointy, int widthx, int widthy) {
+    for (int x = pointx; x < widthx; x++) { for (int y = pointy; y < widthy; y++) {
+        long double a, b;
+        mapValues(x, y, a, b, scale);
+        long double tx = 0.0f;
+        long double ty = 0.0f;
+        a = a + xOffset;
+        b = b + yOffset;
+            
+        for (int i = 0; i < numOfIterations; i++) {
+           long double xtemp =  tx*tx - ty*ty + a;
+            ty = 2*tx*ty + b;
+            tx = xtemp;
+            //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations - i*5, 255, 255)); i = numOfIterations;}
+            //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations + i*5, 255, 255)); i = numOfIterations;}
+            //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) / numOfIterations - i*5, 255, 255)); i = numOfIterations;}
+            if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * i + i*5, 255, 255)); i = numOfIterations;}
+            else {fractal.setPixel(x, y, sf::Color(0, 0, 0));}
+        }
+           
+    }}
+        
+        draw.update(fractal);
+        window.clear();
+        print.setTexture(draw, false);
+        window.draw(print);
+        
 }
 
 sf::Color hsv(int hue, long double sat, long double val) {

@@ -45,6 +45,7 @@
             <linkerOptionItem>-lsfml-system</linkerOptionItem>
             <linkerOptionItem>-lsfml-audio</linkerOptionItem>
             <linkerOptionItem>-lsfml-network</linkerOptionItem>
+            <linkerOptionItem>-lpthread</linkerOptionItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
