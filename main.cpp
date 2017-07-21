@@ -7,20 +7,22 @@
 using namespace std;
 
 //Variables
-const int WIDTH = 200, HEIGHT = 200;
+const int WIDTH = 400, HEIGHT = 400; //Change resolution of the fractal picture.
 sf::Image fractal;
 sf::Texture draw;
 sf::Sprite print;
 sf::RenderWindow window;
-float upscaleValue = 1.2f;
-int numOfIterations = 20;
-long double lod = 1.1f;
+
+int numOfIterations = 30; //The higher it looks better, but less optimized.
+bool isUpdate = true; 
+float optimisationFactor = 1.8; //The higher the better, but it impacts the performance a lot!
+float upscaleValue = 1.0f; //The lower the better. 1 is recommended.
+long double lod = 1.0f;
 long double holder = 1.0f;
-float optimisationFactor = 1.1;
-bool isUpdate = true;
+
 long double scale = 2.0f;
 long double translation = 0.1f;
-long double xOffset = 0.0f;
+long double xOffset = -0.5f;
 long double yOffset = 0.0f;
 
 void mapValues(int posX, int posY, long double &linkX, long double &linkY, long double canvasSize);
@@ -61,7 +63,7 @@ int main(int argc, char** argv) {
         tf.join();
         thread ts(moveCanvas, WIDTH/2, 0, WIDTH, HEIGHT/2);
         ts.join();
-        thread tt(moveCanvas, 0, HEIGHT/2, WIDTH, HEIGHT);
+        thread tt(moveCanvas, 0, HEIGHT/2, WIDTH/2, HEIGHT);
         tt.join();
         thread tq(moveCanvas, WIDTH/2, HEIGHT/2, WIDTH, HEIGHT);
         tq.join();
@@ -100,7 +102,7 @@ void moveCanvas(int pointx, int pointy, int widthx, int widthy) {
         long double p = sqrt((a-1/4)*(a-1/4)+b*b);
         long double q = (a-1/4)*(a-1/4)+b*b;
         
-        if (a < p-2*p*p+1/4) {fractal.setPixel(x, y, sf::Color(0, 0, 200));}
+        if (a < p-2*p*p+1/4) {fractal.setPixel(x, y, sf::Color(0, 0, 0));}
         else {
             a= a + var;
             for (int i = 0; i < numOfIterations; i++) {
