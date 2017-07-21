@@ -7,17 +7,20 @@
 using namespace std;
 
 //Variables
-const int WIDTH = 500, HEIGHT = 500;
+const int WIDTH = 200, HEIGHT = 200;
 sf::Image fractal;
 sf::Texture draw;
 sf::Sprite print;
 sf::RenderWindow window;
-int numOfIterations = 30;
-long double lod = 1.0f;
+float upscaleValue = 1.2f;
+int numOfIterations = 20;
+long double lod = 1.1f;
 long double holder = 1.0f;
+float optimisationFactor = 1.1;
+bool isUpdate = true;
 long double scale = 2.0f;
 long double translation = 0.1f;
-long double xOffset = -0.5f;
+long double xOffset = 0.0f;
 long double yOffset = 0.0f;
 
 void mapValues(int posX, int posY, long double &linkX, long double &linkY, long double canvasSize);
@@ -34,7 +37,7 @@ int main(int argc, char** argv) {
     
     
     cout << "Mandelbrot set" << endl;
-    window.create(sf::VideoMode(WIDTH, HEIGHT), "Mandelbrot set", sf::Style::Titlebar | sf::Style::Close);
+    window.create(sf::VideoMode(WIDTH*upscaleValue, HEIGHT*upscaleValue), "Mandelbrot set", sf::Style::Titlebar | sf::Style::Close);
 
     while (window.isOpen()) {
         
@@ -42,17 +45,18 @@ int main(int argc, char** argv) {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {xOffset = xOffset - translation*scale;}
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {xOffset = xOffset + translation*scale;}
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {yOffset = yOffset - translation*scale;}
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {yOffset = yOffset + translation*scale;}
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {scale = scale * 0.9; lod = lod * 1.09;}
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {scale = scale / 0.9; lod = lod / 1.09;}
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {xOffset = xOffset - translation*scale; isUpdate = true;}
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {xOffset = xOffset + translation*scale; isUpdate = true;}
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {yOffset = yOffset - translation*scale; isUpdate = true;}
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {yOffset = yOffset + translation*scale; isUpdate = true;}
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {scale = scale * 0.9; lod = lod * optimisationFactor; isUpdate = true;}
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {scale = scale / 0.9; lod = lod / optimisationFactor; isUpdate = true;}
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {window.close();}
         }
         
-        if (lod > holder + 1.0f) {numOfIterations = numOfIterations + 1; holder = holder + 1.0f;}
-        else if (lod < holder - 1.0f) {numOfIterations = numOfIterations - 1; holder = holder - 1.0f;}
+        if (lod > holder + 1.0f) {numOfIterations = numOfIterations + 1; holder = holder + 1.0f; isUpdate = true;}
+        else if (lod < holder - 1.0f) {numOfIterations = numOfIterations - 1; holder = holder - 1.0f; isUpdate = true;}
+        if (isUpdate) {
         thread tf(moveCanvas, 0, 0, WIDTH/2, HEIGHT/2);
         tf.join();
         thread ts(moveCanvas, WIDTH/2, 0, WIDTH, HEIGHT/2);
@@ -62,6 +66,9 @@ int main(int argc, char** argv) {
         thread tq(moveCanvas, WIDTH/2, HEIGHT/2, WIDTH, HEIGHT);
         tq.join();
         window.display();
+        isUpdate = false;
+        cout << "Update!" << endl;
+        }
     }
 
     return 0;
@@ -87,16 +94,25 @@ void moveCanvas(int pointx, int pointy, int widthx, int widthy) {
         long double ty = 0.0f;
         a = a + xOffset;
         b = b + yOffset;
-            
-        for (int i = 0; i < numOfIterations; i++) {
-           long double xtemp =  tx*tx - ty*ty + a;
-            ty = 2*tx*ty + b;
-            tx = xtemp;
-            //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations - i*5, 255, 255)); i = numOfIterations;}
-            //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations + i*5, 255, 255)); i = numOfIterations;}
-            //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) / numOfIterations - i*5, 255, 255)); i = numOfIterations;}
-            if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * i + i*5, 255, 255)); i = numOfIterations;}
-            else {fractal.setPixel(x, y, sf::Color(0, 0, 0));}
+        
+        float var = 0.25f;
+        a = a - var;
+        long double p = sqrt((a-1/4)*(a-1/4)+b*b);
+        long double q = (a-1/4)*(a-1/4)+b*b;
+        
+        if (a < p-2*p*p+1/4) {fractal.setPixel(x, y, sf::Color(0, 0, 200));}
+        else {
+            a= a + var;
+            for (int i = 0; i < numOfIterations; i++) {
+                long double xtemp =  tx*tx - ty*ty + a;
+                ty = 2*tx*ty + b;
+                tx = xtemp;
+                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations - i*5, 255, 255)); i = numOfIterations;}
+                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations + i*5, 255, 255)); i = numOfIterations;}
+                //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) / numOfIterations - i*5, 255, 255)); i = numOfIterations;}
+                if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * i + i*5, 255, 255)); i = numOfIterations;}
+                else {fractal.setPixel(x, y, sf::Color(0, 0, 0));}
+            } 
         }
            
     }}
@@ -104,8 +120,9 @@ void moveCanvas(int pointx, int pointy, int widthx, int widthy) {
         draw.update(fractal);
         window.clear();
         print.setTexture(draw, false);
+        print.setScale(upscaleValue,upscaleValue);
         window.draw(print);
-        
+             
 }
 
 sf::Color hsv(int hue, long double sat, long double val) {
