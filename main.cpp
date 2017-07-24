@@ -29,14 +29,11 @@ void mapValues(int posX, int posY, long double &linkX, long double &linkY, long 
 void moveCanvas(int pointx, int pointy, int widthx, int widthy);
 sf::Color hsv(int hue, long double sat, long double val);
 
-void prints() {cout << "Hi there!" << endl;}
-
 int main(int argc, char** argv) {
     
     //Initialization
     if (!draw.create(WIDTH, HEIGHT)) {return -1;}
     fractal.create(WIDTH, HEIGHT, sf::Color(30, 30, 30));
-    
     
     cout << "Mandelbrot set" << endl;
     window.create(sf::VideoMode(WIDTH*upscaleValue, HEIGHT*upscaleValue), "Mandelbrot set", sf::Style::Titlebar | sf::Style::Close);
@@ -59,17 +56,18 @@ int main(int argc, char** argv) {
         if (lod > holder + 1.0f) {numOfIterations = numOfIterations + 1; holder = holder + 1.0f; isUpdate = true;}
         else if (lod < holder - 1.0f) {numOfIterations = numOfIterations - 1; holder = holder - 1.0f; isUpdate = true;}
         if (isUpdate) {
-        thread tf(moveCanvas, 0, 0, WIDTH/2, HEIGHT/2);
-        tf.join();
-        thread ts(moveCanvas, WIDTH/2, 0, WIDTH, HEIGHT/2);
-        ts.join();
-        thread tt(moveCanvas, 0, HEIGHT/2, WIDTH/2, HEIGHT);
-        tt.join();
-        thread tq(moveCanvas, WIDTH/2, HEIGHT/2, WIDTH, HEIGHT);
-        tq.join();
-        window.display();
-        isUpdate = false;
-        cout << "Update!" << endl;
+            
+            thread tf(moveCanvas, 0, 0, WIDTH/2, HEIGHT/2);
+            tf.join();
+            thread ts(moveCanvas, WIDTH/2, 0, WIDTH, HEIGHT/2);
+            ts.join();
+            thread tt(moveCanvas, 0, HEIGHT/2, WIDTH/2, HEIGHT);
+            tt.join();
+            thread tq(moveCanvas, WIDTH/2, HEIGHT/2, WIDTH, HEIGHT);
+            tq.join();
+            
+            window.display();
+            isUpdate = false;
         }
     }
 
@@ -109,6 +107,7 @@ void moveCanvas(int pointx, int pointy, int widthx, int widthy) {
                 long double xtemp =  tx*tx - ty*ty + a;
                 ty = 2*tx*ty + b;
                 tx = xtemp;
+                //Different coloring options
                 //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations - i*5, 255, 255)); i = numOfIterations;}
                 //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) * numOfIterations + i*5, 255, 255)); i = numOfIterations;}
                 //if (tx*tx + ty*ty >= 2*2) {fractal.setPixel(x, y, hsv((i*5-(i-1)*5) / numOfIterations - i*5, 255, 255)); i = numOfIterations;}
